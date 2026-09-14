@@ -1,78 +1,50 @@
-document.addEventListener('DOMContentLoaded', () => {
+emailjs.init("TU_PUBLIC_KEY");
 
-    const words = ["Destacados", "Full-Stack", "Backend API", "Interactive UI"];
-    const targetText = document.getElementById('typewriter-text');
-    let wordIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
+document.addEventListener("DOMContentLoaded", () => {
+    const titleElement = document.querySelector(".glow-title");
+    const textToType = "Full Stack Developer";
+    let index = 0;
 
-    function typeEffect() {
-        if (!targetText) return;
-        const currentWord = words[wordIndex];
+    if (titleElement) {
+        titleElement.textContent = "";
 
-        if (isDeleting) {
-            targetText.textContent = currentWord.substring(0, charIndex - 1);
-            charIndex--;
-        } else {
-            targetText.textContent = currentWord.substring(0, charIndex + 1);
-            charIndex++;
-        }
-
-        let speed = isDeleting ? 50 : 100;
-
-        if (!isDeleting && charIndex === currentWord.length) {
-            speed = 2000;
-            isDeleting = true;
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            wordIndex = (wordIndex + 1) % words.length;
-            speed = 500;
-        }
-
-        setTimeout(typeEffect, speed);
-    }
-    typeEffect();
-
-    const filterButtons = document.querySelectorAll('#filter-buttons button');
-    const projectItems = document.querySelectorAll('.project-item');
-
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            filterButtons.forEach(btn => btn.classList.remove('active', 'bg-info', 'text-dark'));
-            button.classList.add('active');
-
-            const filterValue = button.getAttribute('data-filter');
-
-            projectItems.forEach(item => {
-                const itemTechs = item.getAttribute('data-tech').split(' ');
-
-                if (filterValue === 'all' || itemTechs.includes(filterValue)) {
-                    item.classList.remove('hide');
-                } else {
-                    item.classList.add('hide');
-                }
-            });
-        });
-    });
-
-    const observerOptions = {
-        threshold: 0.15
-    };
-
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-                observer.unobserve(entry.target);
+        function typeWriter() {
+            if (index < textToType.length) {
+                titleElement.textContent += textToType.charAt(index);
+                index++;
+                setTimeout(typeWriter, 100);
             }
-        });
-    }, observerOptions);
+        }
 
-    projectItems.forEach(item => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateY(20px)';
-        item.style.transition = 'all 0.5s ease-out';
-        revealObserver.observe(item);
-    });
+        typeWriter();
+    }
+});
+
+document.getElementById('contact-form').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const btnSubmit = document.getElementById('btn-submit');
+    const responseDiv = document.getElementById('form-response');
+
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = 'Enviando...';
+
+    const serviceID = 'TU_SERVICE_ID';
+    const templateID = 'TU_TEMPLATE_ID';
+
+    emailjs.sendForm(serviceID, templateID, this)
+        .then(() => {
+            responseDiv.className = 'alert alert-success mt-2 mb-0 small';
+            responseDiv.innerText = '¡Mensaje enviado con éxito! Pronto lo revisaré y me pondré en contacto contigo.';
+
+            document.getElementById('contact-form').reset();
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = 'Enviar mensaje';
+        }, (error) => {
+            responseDiv.className = 'alert alert-danger mt-2 mb-0 small';
+            responseDiv.innerText = 'Ocurrió un error al enviar el mensaje. Inténtalo de nuevo o escríbeme directamente a mi correo.';
+
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = 'Enviar mensaje';
+        });
 });
